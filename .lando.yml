@@ -1,0 +1,143 @@
+# See https://www.liip.ch/en/blog/setup-drupal-and-lando-with-wsl2-on-windows
+name: PROJECTNAME
+recipe: drupal9
+config:
+  webroot: web
+  php: '7.4'
+  xdebug: 'false'
+  composer_version: "2.0.12"
+  config:
+    php: lando/php.ini
+#    vhosts: config/custom_vhosts.conf
+proxy:
+  pma:
+    - pma.PROJECTNAME.lndo.site
+#  search:
+#    - solr.PROJECTNAME.lndo.site:8983
+  mailhog:
+    - mailhog.PROJECTNAME.lndo.site
+#  rabbitmq:
+#    - rabbit.PROJECTNAME.lndo.site:15672
+
+services:
+  appserver:
+    build:
+      - composer install
+    xdebug: true
+    overrides:
+      environment:
+        # support debugging Drush with XDEBUG.
+        PHP_IDE_CONFIG: "serverName=appserver"
+        LANDO_HOST_IP: "host.docker.internal"
+        XDEBUG_CONFIG: "remote_enable=1 remote_host=host.docker.internal"
+        DRUSH_OPTIONS_URI: "http://PROJECTNAME.lndo.site"
+        SIMPLETEST_BASE_URL: "http://PROJECTNAME.lndo.site"
+        SIMPLETEST_DB: "mysql://drupal:drupal@database/drupal"
+        MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox"]}}, "http://chrome:9515"]'
+        DRUSH_OPTIONS_ROOT: '/app/web'
+
+  database:
+    # Default to 5.7
+    type: mysql
+    # You can connect externally via "external_connection" info from `lando info`.
+    portforward: true
+    creds:
+      # These credentials are used only for this specific instance.
+      # You can use the same credentials for each Lando site.
+      user: drupal
+      password: drupal
+      database: drupal
+
+  pma:
+    type: phpmyadmin
+    hosts:
+      - database
+
+#  search:
+#    type: solr:8.4
+#    portforward: true
+#    core: drupal8
+#    config:
+#      dir: "web/modules/contrib/search_api_solr/solr-conf-templates/8.x"
+
+  memcached:
+    type: memcached
+    portforward: false
+    mem: 256
+
+  mailhog:
+    # Default port is 1025
+    type: mailhog
+    hogfrom:
+      - appserver
+
+  node:
+    type: node
+
+#  rabbitmq:
+#    type: compose
+#    services:
+#      # Grab RabbitMQ management image. Username: guest, Password: guest
+#      image: "rabbitmq:3-management"
+#      hostname: "rabbit"
+#
+#      # Start the server for RabbitMQ
+#      command: rabbitmq-server
+#
+#      # Expose RabbitMQ Ports
+#      ports:
+#        - '15673:15673'
+#        - '5673:5673'
+#
+#      # Link RabbitMQ Configs
+#      volumes:
+#        - lando/rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
+#      labels:
+#        NAME: "rabbitmq"
+#
+## Shows IP address on 'lando start'
+#events:
+#  post-start:
+#    - rabbitmq: echo -e "\n\e[36mRABBITMQ IP ADDRESS:\e[32m"
+#    - rabbitmq: hostname -i | cut -d' ' -f1
+
+tooling:
+  phpunit-local:
+    service: appserver
+    description: Runs phpunit with config at web/sites/default/local.phpunit.xml
+    cmd: /app/vendor/bin/phpunit -v -c /app/web/sites/default/local.phpunit.xml
+  xdebug-on:
+    service: appserver
+    description: Enable xdebug for apache.
+    cmd: docker-php-ext-enable xdebug && /etc/init.d/apache2 reload
+    user: root
+  xdebug-off:
+    service: appserver
+    description: Disable xdebug for apache.
+    cmd: rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && /etc/init.d/apache2 reload
+    user: root
+  phpcs:
+    service: appserver
+    cmd: /app/vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,inc,install,test,profile,theme,css,info,txt,md,yml
+  phpcbf:
+    service: appserver
+    cmd: /app/vendor/bin/phpcbf
+  phpunit:
+    service: appserver
+    cmd: "php /app/vendor/bin/phpunit -c /app/phpunit.xml"
+  npm:
+    service: node
+  node:
+    service: node
+    # Set up command "Lando rabbit" for basic RabbitMQ commands
+#  rabbit:
+#    # User must be root to prevent erlang cookie error
+#    service: rabbitmq
+#    user: root
+#    cmd: rabbitmqctl
+#  rabbit-ip:
+#    # Setup command "lando rabbit-ip" to get the ip address
+#    service: rabbitmq
+#    cmd:
+#      - echo -e "\n\e[36mRABBITMQ IP ADDRESS:\e[32m"
+#      - hostname -i | cut -d' ' -f1
