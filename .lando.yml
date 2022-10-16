@@ -23,6 +23,8 @@ services:
   appserver:
     build:
       - composer install
+    build_as_root:  
+      - apt-get install -y vim
     xdebug: true
     overrides:
       environment:
@@ -39,6 +41,7 @@ services:
   database:
     # Default to 5.7
     type: mysql
+    #type: mysql:8.0
     # You can connect externally via "external_connection" info from `lando info`.
     portforward: true
     creds:
