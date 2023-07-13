@@ -16,8 +16,6 @@ proxy:
 #    - solr.PROJECTNAME.lndo.site:8983
   mailhog:
     - mailhog.PROJECTNAME.lndo.site
-#  rabbitmq:
-#    - rabbit.PROJECTNAME.lndo.site:15672
 
 services:
   appserver:
@@ -77,33 +75,6 @@ services:
   node:
     type: node
 
-#  rabbitmq:
-#    type: compose
-#    services:
-#      # Grab RabbitMQ management image. Username: guest, Password: guest
-#      image: "rabbitmq:3-management"
-#      hostname: "rabbit"
-#
-#      # Start the server for RabbitMQ
-#      command: rabbitmq-server
-#
-#      # Expose RabbitMQ Ports
-#      ports:
-#        - '15673:15673'
-#        - '5673:5673'
-#
-#      # Link RabbitMQ Configs
-#      volumes:
-#        - lando/rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
-#      labels:
-#        NAME: "rabbitmq"
-#
-## Shows IP address on 'lando start'
-#events:
-#  post-start:
-#    - rabbitmq: echo -e "\n\e[36mRABBITMQ IP ADDRESS:\e[32m"
-#    - rabbitmq: hostname -i | cut -d' ' -f1
-
 tooling:
   phpunit-local:
     service: appserver
@@ -132,15 +103,3 @@ tooling:
     service: node
   node:
     service: node
-    # Set up command "Lando rabbit" for basic RabbitMQ commands
-#  rabbit:
-#    # User must be root to prevent erlang cookie error
-#    service: rabbitmq
-#    user: root
-#    cmd: rabbitmqctl
-#  rabbit-ip:
-#    # Setup command "lando rabbit-ip" to get the ip address
-#    service: rabbitmq
-#    cmd:
-#      - echo -e "\n\e[36mRABBITMQ IP ADDRESS:\e[32m"
-#      - hostname -i | cut -d' ' -f1
