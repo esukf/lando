@@ -20,3 +20,45 @@ Start lando to build.
 ```
 lando start
 ```
+
+Xdebug.
+
+Ensure in .lando.yml the following.
+
+```
+config:
+  webroot: web
+  php: '8.1'
+  xdebug: 'true'
+```
+
+```
+services:
+ appserver:
+   overrides:
+     environment:
+       XDEBUG_CONFIG: "discover_client_host=0 client_host=host.docker.internal"
+```
+
+Ensure in vscode debug launch configuration to set hostname to 127.0.0.1.
+
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Listen for Xdebug",
+            "hostname": "127.0.0.1",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": {
+                "/app": "${workspaceRoot}",
+             }
+        }
+    ]
+}
+```
+
+
+
