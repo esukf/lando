@@ -60,5 +60,12 @@ Ensure in vscode debug launch configuration to set hostname to 127.0.0.1.
 }
 ```
 
+For Drupal, you have to fix the sites default folder. ssh in to the appserver and chown the folder
+
+```
+lando ssh -u root
+chmod ug+w /app/web/sites/default
+```
+
 
 
