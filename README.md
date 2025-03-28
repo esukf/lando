@@ -67,5 +67,18 @@ lando ssh -u root
 chmod ug+w /app/web/sites/default
 ```
 
+To us mailhog with phpmailer_smtp module, add the following settings to settings.php
+
+```
+/**
+ * PHPMailer SMTP config
+ */
+$config['phpmailer_smtp.settings']['smtp_host'] = 'mailhog';
+$config['phpmailer_smtp.settings']['smtp_port'] = '1025';
+$config['phpmailer_smtp.settings']['smtp_protocol'] = '';
+$config['phpmailer_smtp.settings']['smtp_username'] = '';
+$config['phpmailer_smtp.settings']['smtp_password'] = '';
+$config['phpmailer_smtp.settings']['smtp_hide_password'] = TRUE;
+```
 
 
